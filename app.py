@@ -43,14 +43,21 @@ download_status = {
 # Generate a unique ID for the device
 DEVICE_ID_FILE = os.path.join(app.config['DOWNLOAD_FOLDER'], 'device_id.txt')
 def get_device_id():
-    if not os.path.exists(DEVICE_ID_FILE):
-        device_id = str(uuid.uuid4())
-        with open(DEVICE_ID_FILE, 'w') as f:
-            f.write(device_id)
-    else:
-        with open(DEVICE_ID_FILE, 'r') as f:
-            device_id = f.read().strip()
-    return device_id
+    try:
+        if not os.path.exists(app.config['DOWNLOAD_FOLDER']):
+            os.makedirs(app.config['DOWNLOAD_FOLDER'])
+            
+        if not os.path.exists(DEVICE_ID_FILE):
+            device_id = str(uuid.uuid4())
+            with open(DEVICE_ID_FILE, 'w') as f:
+                f.write(device_id)
+        else:
+            with open(DEVICE_ID_FILE, 'r') as f:
+                device_id = f.read().strip()
+        return device_id
+    except Exception as e:
+        print(f"Error getting device ID: {e}")
+        return "unknown-device-id"
 
 DEVICE_ID = get_device_id()
 
