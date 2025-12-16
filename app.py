@@ -17,6 +17,15 @@ import io
 import instaloader
 import re
 
+# Set environment variables for Vercel/Serverless to use /tmp for caching
+if os.environ.get('VERCEL'):
+    os.environ['XDG_CACHE_HOME'] = '/tmp/.cache'
+    os.environ['XDG_CONFIG_HOME'] = '/tmp/.config'
+    os.environ['MPLCONFIGDIR'] = '/tmp/.matplotlib'
+
+# Common User Agent to bypass bot detection
+COMMON_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
 app = Flask(__name__)
 
 # --- Configuration ---
@@ -257,6 +266,8 @@ def download_video(url, quality, mode, download_folder, platform=None):
             'compat_options': ['no-sabr'],
             'restrictfilenames': True,
             'writeinfojson': True,  # Save video info for metadata
+            'user_agent': COMMON_USER_AGENT,
+            'nocheckcertificate': True,
         }
         
         # Add ffmpeg location if available
@@ -386,8 +397,19 @@ def fetch_title():
         return jsonify({'success': False, 'title': 'Please enter a video URL', 'thumbnail': None})
     
     try:
-        with yt_dlp.YoutubeDL({'quiet': True, 'extract_flat': 'in_playlist', 'force_generic_extractor': True}) as ydl:
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': 'in_playlist',
+            'force_generic_extractor': True,
+            'user_agent': COMMON_USER_AGENT,
+            'nocheckcertificate': True,
+            'ignoreerrors': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            if not info:
+                return jsonify({'success': False, 'title': 'Could not fetch video info', 'thumbnail': None})
+                
             title = info.get('title', 'No title found')
             thumbnail = info.get('thumbnail', None)
             download_status['title'] = title
@@ -415,13 +437,24 @@ def start_download():
 
     if platform != 'other':
         try:
-            with yt_dlp.YoutubeDL({'quiet': True, 'extract_flat': 'in_playlist', 'force_generic_extractor': True}) as ydl:
+            ydl_opts = {
+                'quiet': True,
+                'extract_flat': 'in_playlist',
+                'force_generic_extractor': True,
+                'user_agent': COMMON_USER_AGENT,
+                'nocheckcertificate': True,
+                'ignoreerrors': True,
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                extractor = info.get('extractor_key', '').lower()
-                if platform.lower() not in extractor:
-                    return jsonify(success=False, message=f"The URL is not a valid {platform} link.")
+                if info:
+                    extractor = info.get('extractor_key', '').lower()
+                    if platform.lower() not in extractor:
+                        # Just a warning, don't block
+                        print(f"Warning: URL might not be a valid {platform} link. Extractor: {extractor}")
         except Exception as e:
-            return jsonify(success=False, message=f"Error verifying URL: {str(e)}")
+            print(f"Error verifying URL: {str(e)}")
+            # Continue anyway, don't block download on verification error
 
     if download_status['is_downloading']:
         return jsonify(success=False, message='Another download is already in progress')
