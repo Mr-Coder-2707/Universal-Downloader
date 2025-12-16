@@ -725,10 +725,6 @@ def download_instagram_files():
         
     return jsonify({'success': True, 'message': 'Download started'})
 
-    
-    result = download_status.get('instagram_result', {'success': False, 'message': 'Unknown error'})
-    return jsonify(result)
-
 @app.route('/download_instagram_single', methods=['POST'])
 def download_instagram_single():
     """Download a single media item from Instagram"""
@@ -764,60 +760,6 @@ def download_instagram_single():
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error downloading media: {str(e)}'})
-
-@app.route('/fetch_instagram_info', methods=['POST'])
-def fetch_instagram_info():
-    url = request.form.get('url')
-    
-    if not url:
-        return jsonify({'success': False, 'message': 'URL is required'})
-    
-    if 'instagram.com' not in url:
-        return jsonify({'success': False, 'message': 'Please provide a valid Instagram URL'})
-    
-    try:
-        # Extract shortcode
-        shortcode = extract_instagram_shortcode(url)
-        if not shortcode:
-            return jsonify({'success': False, 'message': 'Invalid Instagram URL'})
-        
-        # Create Instaloader instance
-        L = instaloader.Instaloader()
-        
-        # Get post info
-        post = instaloader.Post.from_shortcode(L.context, shortcode)
-        
-        # Get all media URLs (for carousel posts)
-        media_items = []
-        if post.typename == 'GraphSidecar':  # Carousel post
-            for node in post.get_sidecar_nodes():
-                media_items.append({
-                    'url': node.video_url if node.is_video else node.display_url,
-                    'is_video': node.is_video,
-                    'type': 'video' if node.is_video else 'image'
-                })
-        else:
-            # Single post
-            media_items.append({
-                'url': post.video_url if post.is_video else post.url,
-                'is_video': post.is_video,
-                'type': 'video' if post.is_video else 'image'
-            })
-        
-        return jsonify({
-            'success': True,
-            'title': post.caption[:100] + '...' if post.caption and len(post.caption) > 100 else (post.caption or 'Instagram Post'),
-            'thumbnail': post.url,
-            'owner': post.owner_username,
-            'likes': post.likes,
-            'is_video': post.is_video,
-            'media_count': len(media_items),
-            'media_items': media_items,
-            'typename': post.typename
-        })
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error fetching Instagram info: {str(e)}'})
 
 @app.route('/proxy_image')
 def proxy_image():
