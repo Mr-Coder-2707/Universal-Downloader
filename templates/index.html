@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Video Downloader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <audio id="download-music" src="https://ia800504.us.archive.org/11/items/SuperMarioBros.ThemeMusic/SuperMarioBros.mp3" loop></audio>
+    <div class="container">
+        <h1>Universal Downloader</h1>
+        
+        <div class="card">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('youtube')"><span class="material-icons">ondemand_video</span> YouTube</button>
+                <button class="tab-btn" onclick="openTab('facebook')"><span class="material-icons">public</span> Facebook</button>
+                <button class="tab-btn" onclick="openTab('tiktok')"><span class="material-icons">music_note</span> TikTok</button>
+                <button class="tab-btn" onclick="openTab('instagram')"><span class="material-icons">photo_camera</span> Instagram</button>
+            </div>
+
+            <!-- YouTube Tab -->
+            <div id="youtube" class="tab-content active">
+                <div class="form-group">
+                    <label for="youtube-url">YouTube URL</label>
+                    <div class="supported-platforms">
+                        <span class="badge youtube">YouTube</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="youtube-url" placeholder="Paste YouTube link here...">
+                        <button class="btn btn-secondary" onclick="fetchTitle('youtube')"><span class="material-icons">search</span> Fetch Info</button>
+                    </div>
+                </div>
+
+                <div id="youtube-info" class="video-info" style="display: none;">
+                    <img id="youtube-thumbnail" src="" alt="Thumbnail" class="thumbnail">
+                    <div class="info-text">
+                        <h4 id="youtube-title">Video Title</h4>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="youtube-quality">Quality</label>
+                    <select id="youtube-quality">
+                        {% for quality in qualities %}
+                        <option value="{{ quality }}" {% if quality == '1080p' %}selected{% endif %}>{{ quality }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="youtube-mode">Format</label>
+                    <select id="youtube-mode">
+                        {% for format in formats %}
+                        <option value="{{ format }}">{{ format }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="youtube-folder">Download Folder</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="youtube-folder" value="{{ default_folder }}">
+                        <button class="btn btn-secondary" onclick="browseFolder('youtube-folder')"><span class="material-icons">folder_open</span> Browse</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="startDownload('youtube')"><span class="material-icons">download</span> DOWNLOAD YOUTUBE</button>
+            </div>
+
+            <!-- Facebook Tab -->
+            <div id="facebook" class="tab-content">
+                <div class="form-group">
+                    <label for="facebook-url">Facebook URL</label>
+                    <div class="supported-platforms">
+                        <span class="badge facebook">Facebook</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="facebook-url" placeholder="Paste Facebook link here...">
+                        <button class="btn btn-secondary" onclick="fetchTitle('facebook')"><span class="material-icons">search</span> Fetch Info</button>
+                    </div>
+                </div>
+
+                <div id="facebook-info" class="video-info" style="display: none;">
+                    <img id="facebook-thumbnail" src="" alt="Thumbnail" class="thumbnail">
+                    <div class="info-text">
+                        <h4 id="facebook-title">Video Title</h4>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook-quality">Quality</label>
+                    <select id="facebook-quality">
+                        {% for quality in qualities %}
+                        <option value="{{ quality }}" {% if quality == '720p' %}selected{% endif %}>{{ quality }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook-mode">Format</label>
+                    <select id="facebook-mode">
+                        {% for format in formats %}
+                        <option value="{{ format }}">{{ format }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook-folder">Download Folder</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="facebook-folder" value="{{ default_folder }}">
+                        <button class="btn btn-secondary" onclick="browseFolder('facebook-folder')"><span class="material-icons">folder_open</span> Browse</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="startDownload('facebook')"><span class="material-icons">download</span> DOWNLOAD FACEBOOK</button>
+            </div>
+
+            <!-- TikTok Tab -->
+            <div id="tiktok" class="tab-content">
+                <div class="form-group">
+                    <label for="tiktok-url">TikTok URL</label>
+                    <div class="supported-platforms">
+                        <span class="badge tiktok">TikTok</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="tiktok-url" placeholder="Paste TikTok link here...">
+                        <button class="btn btn-secondary" onclick="fetchTitle('tiktok')"><span class="material-icons">search</span> Fetch Info</button>
+                    </div>
+                </div>
+
+                <div id="tiktok-info" class="video-info" style="display: none;">
+                    <img id="tiktok-thumbnail" src="" alt="Thumbnail" class="thumbnail">
+                    <div class="info-text">
+                        <h4 id="tiktok-title">Video Title</h4>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tiktok-quality">Quality</label>
+                    <select id="tiktok-quality">
+                        {% for quality in qualities %}
+                        <option value="{{ quality }}" {% if quality == '1080p' %}selected{% endif %}>{{ quality }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tiktok-mode">Format</label>
+                    <select id="tiktok-mode">
+                        {% for format in formats %}
+                        <option value="{{ format }}">{{ format }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tiktok-folder">Download Folder</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="tiktok-folder" value="{{ default_folder }}">
+                        <button class="btn btn-secondary" onclick="browseFolder('tiktok-folder')"><span class="material-icons">folder_open</span> Browse</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="startDownload('tiktok')"><span class="material-icons">download</span> DOWNLOAD TIKTOK</button>
+            </div>
+
+            <!-- Instagram Tab -->
+            <div id="instagram" class="tab-content">
+                <div class="form-group">
+                    <label for="instagram-url">Instagram Post/Reel/Image URL</label>
+                    <div class="supported-platforms">
+                        <span class="badge instagram">Posts</span>
+                        <span class="badge instagram">Reels</span>
+                        <span class="badge instagram">Stories</span>
+                    </div>
+                    <input type="text" id="instagram-url" placeholder="Paste Instagram link here...">
+                </div>
+
+                <div class="form-group">
+                    <label for="instagram-folder">Download Folder</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="instagram-folder" value="{{ default_folder }}">
+                        <button class="btn btn-secondary" onclick="browseFolder('instagram-folder')"><span class="material-icons">folder_open</span> Browse</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="fetchInstagramMedia()"><span class="material-icons">search</span> FETCH MEDIA</button>
+                
+                <div id="instagram-media-container" style="display: none; margin-top: 20px;">
+                    <div id="instagram-media-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <!-- Media items will be injected here -->
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="downloadSelectedInstagram()">Download Selected</button>
+                        <button class="btn btn-primary" onclick="downloadAllInstagram()">Download All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="card" id="status-card">
+            <h3>Status</h3>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="status-message" class="status-message">Ready to download</p>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
+                <button class="btn btn-secondary" onclick="togglePause()"><span class="material-icons">pause_circle</span> Pause / Resume</button>
+                <button class="btn btn-secondary" onclick="openFolder()"><span class="material-icons">folder</span> Open Folder</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/instagram_ui.js') }}"></script>
+</body>
+</html>
