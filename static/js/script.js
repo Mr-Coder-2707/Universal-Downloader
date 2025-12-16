@@ -101,18 +101,6 @@ async function startDownload(platform) {
                 stopMusic();
                 document.getElementById('status-message').innerText = data.message;
                 alert(data.message);
-                
-                // Trigger browser download for Instagram files
-                if (data.files && data.files.length > 0) {
-                    data.files.forEach(file => {
-                        const link = document.createElement('a');
-                        link.href = `/downloads/${encodeURIComponent(file)}`;
-                        link.download = file;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-                }
             } else {
                 stopMusic();
                 alert('Error: ' + data.message);
@@ -181,16 +169,6 @@ function startStatusPolling() {
                     clearInterval(statusInterval);
                     setTimeout(() => {
                          document.getElementById('status-message').innerText = "Download Finished!";
-                         
-                         // Trigger browser download
-                         if (data.current_file) {
-                             const link = document.createElement('a');
-                             link.href = `/downloads/${encodeURIComponent(data.current_file)}`;
-                             link.download = data.current_file;
-                             document.body.appendChild(link);
-                             link.click();
-                             document.body.removeChild(link);
-                         }
                     }, 1000);
                 } else {
                     // Download stopped but not 100% (Error or Cancelled)
